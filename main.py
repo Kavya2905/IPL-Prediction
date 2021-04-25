@@ -33,13 +33,19 @@ df = df[df['ball'] <= 5.6]
 
 df = df[df['innings'] < 2]
 
-#df['total_run'] = df['runs'].groupby(df.index // 36).sum()
+df['total_runs'] = df.groupby(df.index // 36)['runs'].transform('sum')
 
-s = (df['start_date']!=df['start_date'].shift()).cumsum()
-print (s)
-df['total_runs'] = df['runs'].groupby(s).cumsum()
-
+#[lambda x: ~(x.duplicated(keep='last'))]
+#df['total_runs'] = df.loc[:36, 'runs'].sum()
+#df = df.groupby(df.index//36).sum()
+#s = (df['start_date']!=df['start_date'].shift()).cumsum()
+#print (s)
+#df['total_runs'] = df['runs'].groupby(s).cumsum()
+#df['total_runs'] = df.groupby['start_date']((np.arange(len(df.columns)) // 31) + 1, axis=1).sum()
+#df['total_runs'] = df['runs'].rolling(15).sum().shift(-15)
 #df['total_runs'] = df['runs'].sum()
+#df = df.groupby(['start_date'],as_index=False).agg({'total_runs': 'sum'})
+#df = df.groupby(['start_date'],as_index=False).agg({'runs': 'sum'})
 
 from datetime import datetime
 df['start_date'] = df['start_date'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
@@ -130,7 +136,7 @@ ru = run_w_bat + ex + wid + nob + by + lby + pen
 
 temp_array = temp_array + [inn, bal, run_w_bat, ex , wid,nob, by, lby, pen, ru]
 data = np.array([temp_array])
-my_prediction = int(regressor.predict(data)[23])
+my_prediction = int(regressor.predict(data)[0])
 lower_limit = my_prediction-10
 upper_limit = my_prediction+5
 print("The final predicted score:", my_prediction)
