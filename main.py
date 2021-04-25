@@ -33,14 +33,18 @@ df = df[df['ball'] <= 5.6]
 
 df = df[df['innings'] < 2]
 
-total = 0
-for row in df:
-    total += int(row[22])
-    df['total_runs'] = total
+#df['total_run'] = df['runs'].groupby(df.index // 36).sum()
+
+s = (df['start_date']!=df['start_date'].shift()).cumsum()
+print (s)
+df['total_runs'] = df['runs'].groupby(s).cumsum()
+
+#df['total_runs'] = df['runs'].sum()
 
 from datetime import datetime
 df['start_date'] = df['start_date'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d'))
 
+df = df.reset_index()
            # --- Data Preprocessing ---
            # Converting categorical features using OneHotEncoding method
 encoded_df = pd.get_dummies(data=df, columns=['batting_team', 'bowling_team'])
@@ -54,7 +58,7 @@ encoded_df = encoded_df[['start_date','innings', 'ball','batting_team_Chennai Su
                           'bowling_team_Kolkata Knight Riders', 'bowling_team_Mumbai Indians', 'bowling_team_Rajasthan Royals',
                           'bowling_team_Royal Challengers Bangalore', 'bowling_team_Sunrisers Hyderabad',
                         'runs_off_bat', 'extras','wides','noballs',
-                          'byes', 'legbyes','penalty', 'runs']]
+                          'byes', 'legbyes','penalty', 'runs', 'total_runs']]
 X_train = encoded_df.drop(labels='total_runs', axis=1)[encoded_df['start_date'].dt.year <= 2016]
 X_test = encoded_df.drop(labels='total_runs', axis=1)[encoded_df['start_date'].dt.year >= 2017]
 
@@ -66,6 +70,7 @@ y_test = encoded_df[encoded_df['start_date'].dt.year >= 2017]['total_runs'].valu
 X_train.drop(labels='start_date', axis=True, inplace=True)
 X_test.drop(labels='start_date', axis=True, inplace=True)
 
+print(encoded_df)
 # --- Model Building ---
            # Linear Regression Model
 from sklearn.linear_model import LinearRegression
@@ -121,11 +126,11 @@ by = int(input('Enter byes:'))
 lby = int(input('Enter legbyes:'))
 pen = int(input('Enter penalty:'))
 ru = run_w_bat + ex + wid + nob + by + lby + pen
-tot_runs = total
 
-temp_array = temp_array + [inn, bal, run_w_bat, ex , wid,nob, by, lby, pen, ru, tot_runs]
+
+temp_array = temp_array + [inn, bal, run_w_bat, ex , wid,nob, by, lby, pen, ru]
 data = np.array([temp_array])
-my_prediction = int(regressor.predict(data)[0])
+my_prediction = int(regressor.predict(data)[23])
 lower_limit = my_prediction-10
 upper_limit = my_prediction+5
 print("The final predicted score:", my_prediction)
